@@ -83,4 +83,28 @@ describe("email canvas block controls", () => {
       ),
     ).toHaveStyle({ paddingInline: "0" });
   });
+
+  it("exposes section settings when a full-width image covers the section", () => {
+    const document = structuredClone(sampleTemplate);
+    const section = document.blocks.find(
+      (block) => block.id === "section-letter",
+    );
+    const image = createBlock("image");
+    section!.props.fullWidth = true;
+    section!.children = [image];
+    useBuilderStore.setState({ document });
+
+    render(
+      <DndContext>
+        <EmailCanvas />
+      </DndContext>,
+    );
+
+    fireEvent.pointerOver(screen.getByAltText("A bright modern workspace"));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Edit section settings" }),
+    );
+
+    expect(useBuilderStore.getState().selectedBlockId).toBe("section-letter");
+  });
 });

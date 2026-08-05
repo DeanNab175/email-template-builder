@@ -15,14 +15,22 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Copy, GripVertical, Trash2 } from "lucide-react";
+import { Copy, GripVertical, Settings2, Trash2 } from "lucide-react";
 import { EmailBlockView } from "@/components/canvas/email-block-view";
 import { blockRegistry } from "@/features/rendering/block-registry";
 import { cn } from "@/lib/utils/cn";
 import { useBuilderStore } from "@/store/builder-store";
 import type { EmailBlock } from "@/types";
 
-const HoveredBlockContext = createContext<string | null>(null);
+interface CanvasHoverState {
+  blockId: string | null;
+  fullWidthSectionId: string | null;
+}
+
+const CanvasHoverContext = createContext<CanvasHoverState>({
+  blockId: null,
+  fullWidthSectionId: null,
+});
 
 function DropList({
   blocks,
@@ -103,7 +111,7 @@ const CanvasBlock = memo(function CanvasBlock({
   const selectBlock = useBuilderStore((state) => state.selectBlock);
   const deleteBlock = useBuilderStore((state) => state.deleteBlock);
   const duplicateBlock = useBuilderStore((state) => state.duplicateBlock);
-  const hoveredBlockId = useContext(HoveredBlockContext);
+  const hover = useContext(CanvasHoverContext);
   const {
     attributes,
     listeners,
@@ -129,6 +137,8 @@ const CanvasBlock = memo(function CanvasBlock({
     <div
       ref={setNodeRef}
       data-canvas-block-id={block.id}
+      data-canvas-block-type={block.type}
+      data-full-width={block.props.fullWidth === true ? "true" : undefined}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
         "relative cursor-pointer outline-none",
@@ -155,7 +165,7 @@ const CanvasBlock = memo(function CanvasBlock({
         aria-label={`${blockRegistry[block.type].label} block controls`}
         className={cn(
           "absolute top-1 left-1/2 z-30 hidden -translate-x-1/2 items-center overflow-hidden rounded-md bg-slate-900 text-white shadow-xl",
-          hoveredBlockId === block.id && "flex",
+          hover.blockId === block.id && "flex",
         )}
       >
         <button
@@ -187,6 +197,23 @@ const CanvasBlock = memo(function CanvasBlock({
           <Trash2 className="size-3" />
         </button>
       </div>
+      {block.type === "section" &&
+        block.props.fullWidth === true &&
+        hover.fullWidthSectionId === block.id &&
+        hover.blockId !== block.id && (
+          <button
+            type="button"
+            data-section-selector
+            className="absolute top-2 left-2 z-40 flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-[9px] font-bold tracking-wider text-white uppercase shadow-lg hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            onClick={(event) => {
+              event.stopPropagation();
+              selectBlock(block.id);
+            }}
+            aria-label="Edit section settings"
+          >
+            <Settings2 className="size-3" /> Section
+          </button>
+        )}
       <EmailBlockView block={block}>
         <StructuralChildren block={block} />
       </EmailBlockView>
@@ -198,25 +225,44 @@ export function EmailCanvas() {
   const document = useBuilderStore((state) => state.document);
   const selectedBlockId = useBuilderStore((state) => state.selectedBlockId);
   const selectBlock = useBuilderStore((state) => state.selectBlock);
-  const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
+  const [hover, setHover] = useState<CanvasHoverState>({
+    blockId: null,
+    fullWidthSectionId: null,
+  });
 
   const handlePointerOver = (event: ReactPointerEvent<HTMLDivElement>) => {
     const target = event.target;
-    const block =
-      target instanceof Element
-        ? target.closest<HTMLElement>("[data-canvas-block-id]")
-        : null;
+    if (!(target instanceof Element)) return;
 
-    setHoveredBlockId(block?.dataset.canvasBlockId ?? null);
+    const block = target.closest<HTMLElement>("[data-canvas-block-id]");
+    const fullWidthSection = target.closest<HTMLElement>(
+      '[data-canvas-block-type="section"][data-full-width="true"]',
+    );
+
+    if (target.closest("[data-section-selector]")) {
+      setHover((current) => ({
+        ...current,
+        fullWidthSectionId:
+          fullWidthSection?.dataset.canvasBlockId ?? current.fullWidthSectionId,
+      }));
+      return;
+    }
+
+    setHover({
+      blockId: block?.dataset.canvasBlockId ?? null,
+      fullWidthSectionId: fullWidthSection?.dataset.canvasBlockId ?? null,
+    });
   };
 
   return (
-    <HoveredBlockContext value={hoveredBlockId}>
+    <CanvasHoverContext value={hover}>
       <div
         className="min-h-full px-6 py-8 sm:px-10"
         onClick={() => selectedBlockId && selectBlock(null)}
         onPointerOver={handlePointerOver}
-        onPointerLeave={() => setHoveredBlockId(null)}
+        onPointerLeave={() =>
+          setHover({ blockId: null, fullWidthSectionId: null })
+        }
       >
         <div
           className="mx-auto overflow-hidden bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.28)] transition-[width] duration-300"
@@ -229,6 +275,6 @@ export function EmailCanvas() {
           <DropList blocks={document.blocks} parentId={null} />
         </div>
       </div>
-    </HoveredBlockContext>
+    </CanvasHoverContext>
   );
 }
