@@ -68,7 +68,7 @@ export function PropertyField({ field }: { field: PropertyFieldDefinition }) {
             type="color"
             name={registration.name}
             value={colorValue}
-            className="h-10 w-12 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+            className="h-10 w-12 cursor-pointer rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900"
             aria-label={`${field.label} color picker`}
             aria-invalid={Boolean(error)}
             onBlur={registration.onBlur}

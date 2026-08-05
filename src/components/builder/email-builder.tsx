@@ -30,7 +30,9 @@ const EmailPreview = dynamic(
       (module) => module.EmailPreview,
     ),
   {
-    loading: () => <div className="h-full animate-pulse bg-slate-100" />,
+    loading: () => (
+      <div className="h-full animate-pulse bg-slate-100 dark:bg-slate-950" />
+    ),
   },
 );
 
@@ -119,7 +121,7 @@ export function EmailBuilder() {
   };
 
   return (
-    <div className="flex h-dvh min-h-[680px] flex-col overflow-hidden bg-slate-100">
+    <div className="flex h-dvh min-h-[680px] flex-col overflow-hidden bg-slate-100 dark:bg-slate-950">
       <BuilderToolbar />
       <DndContext
         id="email-builder-dnd"
@@ -138,7 +140,7 @@ export function EmailBuilder() {
         <main className="flex min-h-0 flex-1">
           {surface === "design" && <BlockLibrary />}
           <section
-            className="builder-grid min-w-0 flex-1 overflow-auto bg-slate-100"
+            className="builder-grid min-w-0 flex-1 overflow-auto bg-slate-100 dark:bg-slate-950"
             aria-label={surface === "design" ? "Email editor" : "Email preview"}
           >
             {surface === "design" ? <EmailCanvas /> : <EmailPreview />}

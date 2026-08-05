@@ -51,20 +51,20 @@ function LibraryItem({ definition }: { definition: BlockDefinition }) {
       type="button"
       onClick={() => addBlock(definition.type)}
       className={cn(
-        "group flex min-h-21 cursor-grab flex-col items-start rounded-xl border border-slate-200 bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md active:cursor-grabbing",
+        "group flex min-h-21 cursor-grab flex-col items-start rounded-xl border border-slate-200 bg-white p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md active:cursor-grabbing dark:border-slate-700 dark:bg-slate-900 dark:hover:border-indigo-500",
         isDragging && "opacity-35",
       )}
       aria-label={`Add ${definition.label}`}
       {...listeners}
       {...attributes}
     >
-      <span className="mb-2 flex size-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition group-hover:bg-indigo-50 group-hover:text-indigo-600">
+      <span className="mb-2 flex size-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition group-hover:bg-indigo-50 group-hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-300 dark:group-hover:bg-indigo-950 dark:group-hover:text-indigo-400">
         <Icon className="size-4" />
       </span>
-      <span className="text-xs font-bold text-slate-800">
+      <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
         {definition.label}
       </span>
-      <span className="mt-0.5 line-clamp-1 text-[10px] text-slate-500">
+      <span className="mt-0.5 line-clamp-1 text-[10px] text-slate-500 dark:text-slate-400">
         {definition.description}
       </span>
     </button>
@@ -85,12 +85,14 @@ export function BlockLibrary() {
 
   return (
     <aside
-      className="flex h-full w-64 shrink-0 flex-col border-r border-slate-200 bg-slate-50/90"
+      className="flex h-full w-64 shrink-0 flex-col border-r border-slate-200 bg-slate-50/90 dark:border-slate-800 dark:bg-slate-950/95"
       aria-label="Content blocks"
     >
-      <div className="border-b border-slate-200 px-4 py-4">
-        <h2 className="text-sm font-bold text-slate-900">Content</h2>
-        <p className="mt-0.5 text-[11px] text-slate-500">
+      <div className="border-b border-slate-200 px-4 py-4 dark:border-slate-800">
+        <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+          Content
+        </h2>
+        <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
           Drag a block into your email.
         </p>
         <label className="relative mt-3 block">
@@ -99,7 +101,7 @@ export function BlockLibrary() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            className="h-9 w-full rounded-lg border border-slate-200 bg-white pr-3 pl-9 text-xs outline-none placeholder:text-slate-400 focus:border-indigo-400 focus:ring-3 focus:ring-indigo-100"
+            className="h-9 w-full rounded-lg border border-slate-200 bg-white pr-3 pl-9 text-xs outline-none placeholder:text-slate-400 focus:border-indigo-400 focus:ring-3 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-indigo-950"
             placeholder="Search blocks"
           />
         </label>
@@ -129,7 +131,7 @@ export function BlockLibrary() {
           </p>
         )}
       </div>
-      <div className="border-t border-slate-200 px-4 py-3 text-[10px] leading-4 text-slate-500">
+      <div className="border-t border-slate-200 px-4 py-3 text-[10px] leading-4 text-slate-500 dark:border-slate-800 dark:text-slate-400">
         Tip: sections and containers accept nested blocks.
       </div>
     </aside>

@@ -59,13 +59,15 @@ export function PropertyEditor() {
 
   return (
     <aside
-      className="flex h-full w-72 shrink-0 flex-col border-l border-slate-200 bg-white"
+      className="flex h-full w-72 shrink-0 flex-col border-l border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
       aria-label="Properties panel"
     >
-      <div className="flex h-[65px] items-center justify-between border-b border-slate-200 px-4">
+      <div className="flex h-[65px] items-center justify-between border-b border-slate-200 px-4 dark:border-slate-800">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="size-4 text-slate-500" />
-          <h2 className="text-sm font-bold text-slate-900">Properties</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+            Properties
+          </h2>
         </div>
         {block && (
           <Button
@@ -85,14 +87,14 @@ export function PropertyEditor() {
         ) : (
           <FormProvider {...methods}>
             <form onSubmit={(event) => event.preventDefault()}>
-              <div className="border-b border-slate-100 p-4">
+              <div className="border-b border-slate-100 p-4 dark:border-slate-800">
                 <div className="flex items-center justify-between">
                   <div>
                     <Badge>{block.type}</Badge>
-                    <h3 className="mt-2 text-sm font-bold text-slate-900">
+                    <h3 className="mt-2 text-sm font-bold text-slate-900 dark:text-slate-100">
                       {blockRegistry[block.type].label}
                     </h3>
-                    <p className="mt-0.5 text-[11px] text-slate-500">
+                    <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
                       {blockRegistry[block.type].description}
                     </p>
                   </div>
@@ -119,7 +121,10 @@ export function PropertyEditor() {
                 </div>
               </div>
               {groups.map(([group, fields]) => (
-                <fieldset key={group} className="border-b border-slate-100 p-4">
+                <fieldset
+                  key={group}
+                  className="border-b border-slate-100 p-4 dark:border-slate-800"
+                >
                   <legend className="mb-3 text-[10px] font-bold tracking-[0.14em] text-slate-400 uppercase">
                     {group}
                   </legend>

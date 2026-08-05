@@ -7,7 +7,7 @@ import {
 import { cn } from "@/lib/utils/cn";
 
 export const inputStyles =
-  "w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-3 focus:ring-indigo-100 disabled:bg-slate-50 disabled:text-slate-500";
+  "w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-3 focus:ring-indigo-100 disabled:bg-slate-50 disabled:text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-950 dark:disabled:bg-slate-800 dark:disabled:text-slate-400";
 
 export const Input = forwardRef<
   HTMLInputElement,
@@ -47,7 +47,7 @@ export function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-1.5 block text-xs font-semibold text-slate-700"
+      className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300"
     >
       {children}
     </label>

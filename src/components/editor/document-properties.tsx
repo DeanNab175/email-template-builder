@@ -46,12 +46,14 @@ export function DocumentProperties() {
 
   return (
     <div className="p-4">
-      <div className="mb-5 rounded-xl border border-indigo-100 bg-indigo-50 p-4">
-        <div className="mb-2 flex size-8 items-center justify-center rounded-lg bg-white text-indigo-600 shadow-sm">
+      <div className="mb-5 rounded-xl border border-indigo-100 bg-indigo-50 p-4 dark:border-indigo-900 dark:bg-indigo-950/50">
+        <div className="mb-2 flex size-8 items-center justify-center rounded-lg bg-white text-indigo-600 shadow-sm dark:bg-slate-900 dark:text-indigo-400">
           <Settings2 className="size-4" />
         </div>
-        <h3 className="text-sm font-bold text-indigo-950">Campaign settings</h3>
-        <p className="mt-1 text-[11px] leading-4 text-indigo-700">
+        <h3 className="text-sm font-bold text-indigo-950 dark:text-indigo-100">
+          Campaign settings
+        </h3>
+        <p className="mt-1 text-[11px] leading-4 text-indigo-700 dark:text-indigo-300">
           Select any block on the canvas to edit its properties.
         </p>
       </div>
@@ -118,14 +120,16 @@ export function DocumentProperties() {
           </Select>
         </div>
       </div>
-      <section className="mt-6 border-t border-slate-200 pt-5">
+      <section className="mt-6 border-t border-slate-200 pt-5 dark:border-slate-800">
         <div className="mb-4 flex items-start gap-3">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             <Type className="size-4" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Fonts</h3>
-            <p className="mt-0.5 text-[11px] leading-4 text-slate-500">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              Fonts
+            </h3>
+            <p className="mt-0.5 text-[11px] leading-4 text-slate-500 dark:text-slate-400">
               Set the default typeface for the email.
             </p>
           </div>
