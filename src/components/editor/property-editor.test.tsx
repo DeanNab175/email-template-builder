@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PropertyEditor } from "@/components/editor/property-editor";
 import { sampleTemplate } from "@/constants/sample-template";
@@ -27,5 +27,26 @@ describe("schema-driven property editor", () => {
     await user.clear(altText);
 
     expect(await screen.findByText("Alt text is required")).toBeInTheDocument();
+  });
+
+  it("updates the selected block from the color picker", () => {
+    useBuilderStore.getState().selectBlock("heading-letter");
+    render(<PropertyEditor />);
+
+    fireEvent.change(screen.getByLabelText("Text color color picker"), {
+      target: { value: "#2563eb" },
+    });
+
+    const section = useBuilderStore
+      .getState()
+      .document.blocks.find((block) => block.id === "section-letter");
+    const heading = section?.children?.find(
+      (block) => block.id === "heading-letter",
+    );
+
+    expect(heading?.props.color).toBe("#2563eb");
+    expect(screen.getByLabelText("Text color hex value")).toHaveValue(
+      "#2563eb",
+    );
   });
 });

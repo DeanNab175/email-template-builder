@@ -23,6 +23,10 @@ export function PropertyField({ field }: { field: PropertyFieldDefinition }) {
     field.key,
     numeric ? { valueAsNumber: true } : undefined,
   );
+  const colorValue =
+    typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value)
+      ? value
+      : "#000000";
 
   return (
     <div>
@@ -54,14 +58,28 @@ export function PropertyField({ field }: { field: PropertyFieldDefinition }) {
           <input
             id={id}
             type="color"
+            name={registration.name}
+            value={colorValue}
             className="h-10 w-12 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
             aria-label={`${field.label} color picker`}
-            {...registration}
+            aria-invalid={Boolean(error)}
+            onBlur={registration.onBlur}
+            onChange={(event) =>
+              registration.onChange({
+                target: {
+                  name: registration.name,
+                  value: event.target.value,
+                },
+                type: event.type,
+              })
+            }
           />
           <Input
             aria-label={`${field.label} hex value`}
             maxLength={7}
-            {...register(field.key)}
+            aria-invalid={Boolean(error)}
+            value={String(value ?? "")}
+            {...registration}
           />
         </div>
       ) : (
