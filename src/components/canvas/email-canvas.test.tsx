@@ -107,4 +107,22 @@ describe("email canvas block controls", () => {
 
     expect(useBuilderStore.getState().selectedBlockId).toBe("section-letter");
   });
+
+  it("loads the selected Google Font in the design canvas", () => {
+    const document = structuredClone(sampleTemplate);
+    document.settings.fontFamily = "'Roboto', Arial, sans-serif";
+    useBuilderStore.setState({ document });
+
+    render(
+      <DndContext>
+        <EmailCanvas />
+      </DndContext>,
+    );
+
+    expect(
+      globalThis.document.querySelector(
+        'link[href*="fonts.googleapis.com/css2?family=Roboto"]',
+      ),
+    ).toBeInTheDocument();
+  });
 });

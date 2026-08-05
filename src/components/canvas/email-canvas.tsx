@@ -17,6 +17,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Copy, GripVertical, Settings2, Trash2 } from "lucide-react";
 import { EmailBlockView } from "@/components/canvas/email-block-view";
+import { getGoogleFontStylesheetUrl } from "@/constants/fonts";
 import { blockRegistry } from "@/features/rendering/block-registry";
 import { cn } from "@/lib/utils/cn";
 import { useBuilderStore } from "@/store/builder-store";
@@ -229,6 +230,9 @@ export function EmailCanvas() {
     blockId: null,
     fullWidthSectionId: null,
   });
+  const googleFontStylesheet = getGoogleFontStylesheetUrl(
+    document.settings.fontFamily,
+  );
 
   const handlePointerOver = (event: ReactPointerEvent<HTMLDivElement>) => {
     const target = event.target;
@@ -256,6 +260,9 @@ export function EmailCanvas() {
 
   return (
     <CanvasHoverContext value={hover}>
+      {googleFontStylesheet && (
+        <link rel="stylesheet" href={googleFontStylesheet} />
+      )}
       <div
         className="min-h-full px-6 py-8 sm:px-10"
         onClick={() => selectedBlockId && selectBlock(null)}

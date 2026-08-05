@@ -1,4 +1,5 @@
 import { parseEmailDocument } from "@/schemas";
+import { getGoogleFontStylesheetUrl } from "@/constants/fonts";
 import type { BlockProps, EmailBlock, EmailDocument } from "@/types";
 
 const asString = (value: BlockProps[string]) => String(value ?? "");
@@ -22,7 +23,7 @@ function copy(value: BlockProps[string]) {
   return escapeHtml(asString(value)).replaceAll("\n", "<br>");
 }
 
-function renderButton(props: BlockProps) {
+function renderButton(props: BlockProps, fontFamily: string) {
   const text = copy(props.text ?? props.buttonText);
   const href = safeHref(props.url ?? props.buttonUrl);
   const backgroundColor = asString(props.backgroundColor ?? "#4f46e5");
@@ -38,9 +39,9 @@ function renderButton(props: BlockProps) {
 
   return `<!--[if mso]>
 <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${href}" style="height:${vertical * 2 + 20}px;v-text-anchor:middle;width:${width}px" arcsize="${Math.min(50, radius * 4)}%" stroke="f" fillcolor="${backgroundColor}">
-  <w:anchorlock/><center style="color:${color};font-family:Arial,sans-serif;font-size:16px;font-weight:bold">${text}</center>
+  <w:anchorlock/><center style="color:${color};font-family:${fontFamily};font-size:16px;font-weight:bold">${text}</center>
 </v:roundrect>
-<![endif]--><!--[if !mso]><!--><a href="${href}" target="${target}" style="background-color:${backgroundColor};border-radius:${radius}px;color:${color};display:inline-block;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;line-height:20px;padding:${vertical}px ${horizontal}px;text-align:center;text-decoration:none;-webkit-text-size-adjust:none">${text}</a><!--<![endif]-->`;
+<![endif]--><!--[if !mso]><!--><a href="${href}" target="${target}" style="background-color:${backgroundColor};border-radius:${radius}px;color:${color};display:inline-block;font-family:${fontFamily};font-size:16px;font-weight:700;line-height:20px;padding:${vertical}px ${horizontal}px;text-align:center;text-decoration:none;-webkit-text-size-adjust:none">${text}</a><!--<![endif]-->`;
 }
 
 function renderChildren(
@@ -88,7 +89,7 @@ export function renderBlockHtml(
       return `<tr><td style="color:${asString(props.color)};font-family:${document.settings.fontFamily};font-size:${asNumber(props.fontSize)}px;font-weight:${asString(props.fontWeight)};line-height:${asNumber(props.lineHeight)};padding:${asNumber(props.padding)}px;text-align:${asString(props.align)}"><p style="margin:0">${copy(props.content)}</p></td></tr>`;
 
     case "button":
-      return `<tr><td style="padding:12px 8px;text-align:${asString(props.align)}">${renderButton(props)}</td></tr>`;
+      return `<tr><td style="padding:12px 8px;text-align:${asString(props.align)}">${renderButton(props, document.settings.fontFamily)}</td></tr>`;
 
     case "image": {
       const maximumWidth = insideFullWidthSection
@@ -127,7 +128,7 @@ export function renderBlockHtml(
   <p style="color:${asString(props.textColor)};font-family:${document.settings.fontFamily};font-size:12px;font-weight:700;letter-spacing:2px;margin:0 0 14px;text-transform:uppercase">${copy(props.eyebrow)}</p>
   <h1 style="color:${asString(props.textColor)};font-family:${document.settings.fontFamily};font-size:42px;line-height:1.12;margin:0 0 18px">${copy(props.title)}</h1>
   <p style="color:${asString(props.textColor)};font-family:${document.settings.fontFamily};font-size:17px;line-height:1.6;margin:0 0 26px">${copy(props.body)}</p>
-  ${renderButton({ ...props, text: props.buttonText, url: props.buttonUrl, backgroundColor: "#ffffff", color: props.overlayColor, borderRadius: 8, horizontalPadding: 28, verticalPadding: 14 })}
+  ${renderButton({ ...props, text: props.buttonText, url: props.buttonUrl, backgroundColor: "#ffffff", color: props.overlayColor, borderRadius: 8, horizontalPadding: 28, verticalPadding: 14 }, document.settings.fontFamily)}
 </td></tr></tbody></table>`;
       return `<tr><td role="img" aria-label="${escapeHtml(asString(props.imageAlt))}" background="${safeHref(props.imageUrl)}" bgcolor="${asString(props.overlayColor)}" style="background-color:${asString(props.overlayColor)};background-image:linear-gradient(rgba(15,23,42,.58),rgba(15,23,42,.58)),url('${safeHref(props.imageUrl)}');background-position:center;background-size:cover">
 <!--[if gte mso 9]><v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:${document.settings.width}px;height:${asNumber(props.height)}px"><v:fill type="frame" src="${safeHref(props.imageUrl)}" color="${asString(props.overlayColor)}"/><v:textbox inset="0,0,0,0"><![endif]-->
@@ -166,6 +167,15 @@ export const htmlEmailRenderer: EmailRenderer = {
       .map((block) => renderBlockHtml(block, document))
       .join("\n");
     const preheader = escapeHtml(document.preheader);
+    const googleFontStylesheet = getGoogleFontStylesheetUrl(
+      document.settings.fontFamily,
+    );
+    const googleFontLink = googleFontStylesheet
+      ? `<link href="${escapeHtml(googleFontStylesheet)}" rel="stylesheet" type="text/css">`
+      : "";
+    const googleFontImport = googleFontStylesheet
+      ? `@import url('${googleFontStylesheet}');`
+      : "";
 
     return `<!doctype html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -176,8 +186,10 @@ export const htmlEmailRenderer: EmailRenderer = {
   <meta name="color-scheme" content="light dark">
   <meta name="supported-color-schemes" content="light dark">
   <title>${escapeHtml(document.subject || document.name)}</title>
+  ${googleFontLink}
   <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
   <style>
+    ${googleFontImport}
     html,body{margin:0!important;padding:0!important;width:100%!important}table,td{border-collapse:collapse!important;mso-table-lspace:0pt!important;mso-table-rspace:0pt!important}img{-ms-interpolation-mode:bicubic}a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}
     @media screen and (max-width:680px){.email-shell{width:100%!important}.email-column{display:block!important;width:100%!important}.email-column table{width:100%!important}h1{font-size:34px!important}}
     @media (prefers-color-scheme:dark){.dark-body{background:#111827!important}.dark-shell{background:#ffffff!important}}

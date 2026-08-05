@@ -26,7 +26,12 @@ export const emailDocumentSchema: z.ZodType<EmailDocument> = z.object({
     width: z.number().min(320).max(800),
     backgroundColor: z.string(),
     contentBackgroundColor: z.string(),
-    fontFamily: z.string(),
+    fontFamily: z
+      .string()
+      .trim()
+      .min(1)
+      .max(200)
+      .regex(/^[a-zA-Z0-9\s,'_-]+$/, "Use a valid font name or CSS font stack"),
     textColor: z.string(),
     linkColor: z.string(),
   }),

@@ -27,4 +27,11 @@ describe("email document validation", () => {
 
     expect(() => parseEmailDocument(document)).toThrow(/http/);
   });
+
+  it("rejects unsafe custom font stacks", () => {
+    const document = structuredClone(sampleTemplate);
+    document.settings.fontFamily = "Arial; color: red";
+
+    expect(() => parseEmailDocument(document)).toThrow(/font name/i);
+  });
 });

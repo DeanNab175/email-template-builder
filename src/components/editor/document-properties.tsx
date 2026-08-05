@@ -1,12 +1,48 @@
 "use client";
 
-import { FileText, Mail, Settings2 } from "lucide-react";
+import { useState, type FormEvent } from "react";
+import { FileText, Mail, Plus, Settings2, Type } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { FieldLabel, Input, Select, Textarea } from "@/components/ui/field";
+import { fontPresets, googleFonts, systemFonts } from "@/constants/fonts";
 import { useBuilderStore } from "@/store/builder-store";
+
+const CUSTOM_FONT = "__custom__";
+const safeFontStack = /^[a-zA-Z0-9\s,'_-]+$/;
 
 export function DocumentProperties() {
   const document = useBuilderStore((state) => state.document);
   const updateDocument = useBuilderStore((state) => state.updateDocument);
+  const updateSettings = useBuilderStore((state) => state.updateSettings);
+  const presetFont = fontPresets.some(
+    (font) => font.value === document.settings.fontFamily,
+  );
+  const fontKey = `${document.id}:${document.settings.fontFamily}`;
+  const [customEditorFor, setCustomEditorFor] = useState<string | null>(null);
+  const [customDraft, setCustomDraft] = useState<{
+    fontKey: string;
+    value: string;
+  } | null>(null);
+  const addingCustomFont = !presetFont || customEditorFor === fontKey;
+  const customFont =
+    customDraft?.fontKey === fontKey
+      ? customDraft.value
+      : presetFont
+        ? ""
+        : document.settings.fontFamily;
+  const normalizedCustomFont = customFont.trim().replaceAll('"', "'");
+  const customFontValid =
+    normalizedCustomFont.length > 0 &&
+    normalizedCustomFont.length <= 200 &&
+    safeFontStack.test(normalizedCustomFont);
+
+  const addCustomFont = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!customFontValid) return;
+    setCustomDraft(null);
+    setCustomEditorFor(null);
+    updateSettings({ fontFamily: normalizedCustomFont });
+  };
 
   return (
     <div className="p-4">
@@ -82,6 +118,89 @@ export function DocumentProperties() {
           </Select>
         </div>
       </div>
+      <section className="mt-6 border-t border-slate-200 pt-5">
+        <div className="mb-4 flex items-start gap-3">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+            <Type className="size-4" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Fonts</h3>
+            <p className="mt-0.5 text-[11px] leading-4 text-slate-500">
+              Set the default typeface for the email.
+            </p>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <FieldLabel htmlFor="document-font">Font family</FieldLabel>
+            <Select
+              id="document-font"
+              value={
+                addingCustomFont ? CUSTOM_FONT : document.settings.fontFamily
+              }
+              onChange={(event) => {
+                if (event.target.value === CUSTOM_FONT) {
+                  setCustomEditorFor(fontKey);
+                  return;
+                }
+                setCustomEditorFor(null);
+                setCustomDraft(null);
+                updateSettings({ fontFamily: event.target.value });
+              }}
+            >
+              <optgroup label="Email-safe fonts">
+                {systemFonts.map((font) => (
+                  <option key={font.value} value={font.value}>
+                    {font.label}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Google Fonts">
+                {googleFonts.map((font) => (
+                  <option key={font.value} value={font.value}>
+                    {font.label}
+                  </option>
+                ))}
+              </optgroup>
+              <option value={CUSTOM_FONT}>Custom font stack…</option>
+            </Select>
+          </div>
+          {addingCustomFont && (
+            <form onSubmit={addCustomFont}>
+              <FieldLabel htmlFor="document-custom-font">
+                Add custom font stack
+              </FieldLabel>
+              <div className="flex gap-2">
+                <Input
+                  id="document-custom-font"
+                  value={customFont}
+                  maxLength={200}
+                  placeholder="'Inter', Arial, sans-serif"
+                  aria-invalid={customFont.length > 0 && !customFontValid}
+                  onChange={(event) =>
+                    setCustomDraft({
+                      fontKey,
+                      value: event.target.value,
+                    })
+                  }
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  variant="primary"
+                  disabled={!customFontValid}
+                  aria-label="Add custom font"
+                >
+                  <Plus className="size-4" />
+                </Button>
+              </div>
+              <p className="mt-1 text-[10px] leading-4 text-slate-400">
+                Include email-safe fallbacks; support varies by email client.
+              </p>
+            </form>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

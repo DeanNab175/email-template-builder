@@ -44,6 +44,22 @@ describe("builder store", () => {
     expect(useBuilderStore.getState().isDirty).toBe(true);
   });
 
+  it("updates the document font settings and supports undo", () => {
+    const original = useBuilderStore.getState().document.settings.fontFamily;
+
+    useBuilderStore
+      .getState()
+      .updateSettings({ fontFamily: "Georgia, 'Times New Roman', serif" });
+
+    expect(useBuilderStore.getState().document.settings.fontFamily).toBe(
+      "Georgia, 'Times New Roman', serif",
+    );
+    useBuilderStore.getState().undo();
+    expect(useBuilderStore.getState().document.settings.fontFamily).toBe(
+      original,
+    );
+  });
+
   it("reorders a block downward using sortable target indexes", () => {
     const before = useBuilderStore
       .getState()

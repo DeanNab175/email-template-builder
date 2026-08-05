@@ -25,6 +25,7 @@ import type {
   BuilderSurface,
   EmailClient,
   EmailDocument,
+  EmailSettings,
   PreviewMode,
 } from "@/types";
 
@@ -63,6 +64,7 @@ interface BuilderState {
       Pick<EmailDocument, "name" | "subject" | "preheader" | "status">
     >,
   ) => void;
+  updateSettings: (values: Partial<EmailSettings>) => void;
   loadDocument: (document: EmailDocument) => void;
   newDocument: () => void;
   undo: () => void;
@@ -262,6 +264,20 @@ export const useBuilderStore = create<BuilderState>()(
               updatedAt: new Date().toISOString(),
             }),
             `document:${Object.keys(values).sort().join(",")}`,
+          ),
+        ),
+
+      updateSettings: (values) =>
+        set((state) =>
+          historyMutation(
+            state,
+            (document) => ({
+              ...document,
+              settings: { ...document.settings, ...values },
+              version: document.version + 1,
+              updatedAt: new Date().toISOString(),
+            }),
+            `settings:${Object.keys(values).sort().join(",")}`,
           ),
         ),
 

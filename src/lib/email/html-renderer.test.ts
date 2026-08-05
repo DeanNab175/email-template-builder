@@ -55,4 +55,28 @@ describe("HTML email renderer", () => {
     expect(html).toContain("max-width:100%");
     expect(html).not.toContain("max-width:600px");
   });
+
+  it("uses the selected document font for text and buttons", () => {
+    const document = structuredClone(sampleTemplate);
+    document.settings.fontFamily = "'Inter', Arial, sans-serif";
+
+    const html = renderEmailHtml(document);
+
+    expect(html).toContain("font-family:'Inter', Arial, sans-serif");
+    expect(html).not.toContain("font-family:Arial,Helvetica,sans-serif");
+  });
+
+  it("includes the selected Google Fonts stylesheet", () => {
+    const document = structuredClone(sampleTemplate);
+    document.settings.fontFamily = "'Roboto', Arial, sans-serif";
+
+    const html = renderEmailHtml(document);
+
+    expect(html).toContain(
+      "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap",
+    );
+    expect(html).toContain(
+      "@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap')",
+    );
+  });
 });
