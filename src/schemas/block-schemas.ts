@@ -13,6 +13,7 @@ const alignment = z.enum(["left", "center", "right"]);
 export const blockSchemas = {
   section: z.object({
     backgroundColor: color,
+    fullWidth: z.boolean().optional(),
     paddingTop: z.coerce.number().min(0).max(120),
     paddingBottom: z.coerce.number().min(0).max(120),
   }),

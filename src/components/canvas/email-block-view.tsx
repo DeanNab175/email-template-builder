@@ -1,10 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
-import type { CSSProperties, ReactNode } from "react";
+import {
+  createContext,
+  type CSSProperties,
+  type ReactNode,
+  useContext,
+} from "react";
 import { ExternalLink } from "lucide-react";
 import type { EmailBlock } from "@/types";
 
 const text = (value: EmailBlock["props"][string]) => String(value ?? "");
 const number = (value: EmailBlock["props"][string]) => Number(value ?? 0);
+const FullWidthSectionContext = createContext(false);
 
 export function EmailBlockView({
   block,
@@ -15,21 +21,24 @@ export function EmailBlockView({
 }) {
   const props = block.props;
   const align = text(props.align) as CSSProperties["textAlign"];
+  const insideFullWidthSection = useContext(FullWidthSectionContext);
 
   switch (block.type) {
     case "section":
       return (
-        <div
-          className="min-h-18"
-          style={{
-            backgroundColor: text(props.backgroundColor),
-            paddingTop: number(props.paddingTop),
-            paddingBottom: number(props.paddingBottom),
-            paddingInline: 24,
-          }}
-        >
-          {children}
-        </div>
+        <FullWidthSectionContext value={props.fullWidth === true}>
+          <div
+            className="min-h-18"
+            style={{
+              backgroundColor: text(props.backgroundColor),
+              paddingTop: number(props.paddingTop),
+              paddingBottom: number(props.paddingBottom),
+              paddingInline: props.fullWidth === true ? 0 : 24,
+            }}
+          >
+            {children}
+          </div>
+        </FullWidthSectionContext>
       );
     case "container":
       return (
@@ -98,7 +107,7 @@ export function EmailBlockView({
       );
     case "image":
       return (
-        <div style={{ padding: 8, textAlign: align }}>
+        <div style={{ textAlign: align }}>
           <img
             src={text(props.src)}
             alt={text(props.alt)}
@@ -106,8 +115,8 @@ export function EmailBlockView({
               borderRadius: number(props.borderRadius),
               display: "inline-block",
               height: "auto",
-              maxWidth: "100%",
-              width: number(props.width),
+              maxWidth: insideFullWidthSection ? "100%" : number(props.width),
+              width: "100%",
             }}
           />
         </div>

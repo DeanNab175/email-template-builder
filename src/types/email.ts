@@ -60,7 +60,14 @@ export interface TemplateSummary {
 }
 
 export type PropertyFieldKind =
-  "text" | "textarea" | "url" | "number" | "color" | "select" | "range";
+  | "text"
+  | "textarea"
+  | "url"
+  | "number"
+  | "color"
+  | "select"
+  | "range"
+  | "checkbox";
 
 export interface PropertyOption {
   label: string;

@@ -17,11 +17,15 @@ export const blockRegistry: Record<BlockType, BlockDefinition> = {
     acceptsChildren: true,
     defaultProps: {
       backgroundColor: "#ffffff",
+      fullWidth: false,
       paddingTop: 24,
       paddingBottom: 24,
     },
     fields: [
       field("backgroundColor", "Background", "color", "Appearance"),
+      field("fullWidth", "Full width", "checkbox", "Layout", {
+        help: "Remove the side gutters and let images span the section.",
+      }),
       field("paddingTop", "Top spacing", "range", "Layout", {
         min: 0,
         max: 120,

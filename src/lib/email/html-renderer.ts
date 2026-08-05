@@ -46,30 +46,34 @@ function renderButton(props: BlockProps) {
 function renderChildren(
   children: EmailBlock[] | undefined,
   document: EmailDocument,
+  insideFullWidthSection = false,
 ) {
   return (children ?? [])
-    .map((child) => renderBlockHtml(child, document))
+    .map((child) => renderBlockHtml(child, document, insideFullWidthSection))
     .join("\n");
 }
 
 export function renderBlockHtml(
   block: EmailBlock,
   document: EmailDocument,
+  insideFullWidthSection = false,
 ): string {
   const props = block.props;
 
   switch (block.type) {
-    case "section":
+    case "section": {
+      const fullWidth = props.fullWidth === true;
       return `<tr>
-  <td bgcolor="${asString(props.backgroundColor)}" style="background-color:${asString(props.backgroundColor)};padding:${asNumber(props.paddingTop)}px 24px ${asNumber(props.paddingBottom)}px">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tbody>${renderChildren(block.children, document)}</tbody></table>
+  <td bgcolor="${asString(props.backgroundColor)}" style="background-color:${asString(props.backgroundColor)};padding:${asNumber(props.paddingTop)}px ${fullWidth ? 0 : 24}px ${asNumber(props.paddingBottom)}px">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tbody>${renderChildren(block.children, document, fullWidth)}</tbody></table>
   </td>
 </tr>`;
+    }
 
     case "container":
       return `<tr>
   <td bgcolor="${asString(props.backgroundColor)}" style="background-color:${asString(props.backgroundColor)};padding:${asNumber(props.padding)}px">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tbody>${renderChildren(block.children, document)}</tbody></table>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tbody>${renderChildren(block.children, document, insideFullWidthSection)}</tbody></table>
   </td>
 </tr>`;
 
@@ -87,11 +91,14 @@ export function renderBlockHtml(
       return `<tr><td style="padding:12px 8px;text-align:${asString(props.align)}">${renderButton(props)}</td></tr>`;
 
     case "image": {
-      const image = `<img src="${safeHref(props.src)}" width="${asNumber(props.width)}" alt="${escapeHtml(asString(props.alt))}" border="0" style="border:0;border-radius:${asNumber(props.borderRadius)}px;display:block;height:auto;max-width:100%;outline:none;text-decoration:none;width:${asNumber(props.width)}px">`;
+      const maximumWidth = insideFullWidthSection
+        ? "100%"
+        : `${asNumber(props.width)}px`;
+      const image = `<img src="${safeHref(props.src)}" width="${insideFullWidthSection ? document.settings.width : asNumber(props.width)}" alt="${escapeHtml(asString(props.alt))}" border="0" style="border:0;border-radius:${asNumber(props.borderRadius)}px;display:block;height:auto;max-width:${maximumWidth};outline:none;text-decoration:none;width:100%">`;
       const linked = asString(props.linkUrl)
         ? `<a href="${safeHref(props.linkUrl)}" target="_blank">${image}</a>`
         : image;
-      return `<tr><td align="${asString(props.align)}" style="padding:8px;text-align:${asString(props.align)}">${linked}</td></tr>`;
+      return `<tr><td align="${asString(props.align)}" style="padding:0;text-align:${asString(props.align)}">${linked}</td></tr>`;
     }
 
     case "divider":
@@ -109,7 +116,7 @@ export function renderBlockHtml(
       return `<tr><td bgcolor="${asString(props.backgroundColor)}" style="background:${asString(props.backgroundColor)};padding:8px ${Math.floor(gap / 2)}px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tbody><tr>${columns
         .map(
           (column, index) =>
-            `<td class="${className}" width="${width}%" valign="top" style="padding:0 ${Math.ceil(gap / 2)}px${index === count - 1 ? "" : ";mso-padding-alt:0"}"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tbody>${renderBlockHtml(column, document)}</tbody></table></td>`,
+            `<td class="${className}" width="${width}%" valign="top" style="padding:0 ${Math.ceil(gap / 2)}px${index === count - 1 ? "" : ";mso-padding-alt:0"}"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tbody>${renderBlockHtml(column, document, insideFullWidthSection)}</tbody></table></td>`,
         )
         .join("")}</tr></tbody></table></td></tr>`;
     }

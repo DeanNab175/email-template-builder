@@ -49,4 +49,32 @@ describe("schema-driven property editor", () => {
       "#2563eb",
     );
   });
+
+  it("allows an image to expand to the available width", () => {
+    const imageId = useBuilderStore.getState().addBlock("image");
+    render(<PropertyEditor />);
+
+    fireEvent.change(screen.getByLabelText("Width"), {
+      target: { value: "800" },
+    });
+
+    const image = useBuilderStore
+      .getState()
+      .document.blocks.find((block) => block.id === imageId);
+
+    expect(image?.props.width).toBe(800);
+  });
+
+  it("toggles full-width layout for a section", () => {
+    useBuilderStore.getState().selectBlock("section-letter");
+    render(<PropertyEditor />);
+
+    fireEvent.click(screen.getByLabelText("Full width"));
+
+    const section = useBuilderStore
+      .getState()
+      .document.blocks.find((block) => block.id === "section-letter");
+
+    expect(section?.props.fullWidth).toBe(true);
+  });
 });

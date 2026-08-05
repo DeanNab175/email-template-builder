@@ -45,6 +45,14 @@ export function PropertyField({ field }: { field: PropertyFieldDefinition }) {
           aria-invalid={Boolean(error)}
           {...registration}
         />
+      ) : field.kind === "checkbox" ? (
+        <input
+          id={id}
+          type="checkbox"
+          className="size-4 cursor-pointer rounded border-slate-300 accent-indigo-600"
+          aria-invalid={Boolean(error)}
+          {...registration}
+        />
       ) : field.kind === "select" ? (
         <Select id={id} aria-invalid={Boolean(error)} {...registration}>
           {field.options?.map((option) => (

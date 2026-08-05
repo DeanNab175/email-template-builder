@@ -3,6 +3,7 @@ import { DndContext } from "@dnd-kit/core";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { EmailCanvas } from "@/components/canvas/email-canvas";
 import { sampleTemplate } from "@/constants/sample-template";
+import { createBlock } from "@/features/rendering/block-factory";
 import { useBuilderStore } from "@/store/builder-store";
 
 describe("email canvas block controls", () => {
@@ -53,5 +54,33 @@ describe("email canvas block controls", () => {
     );
     expect(sectionToolbar).not.toHaveClass("flex");
     expect(headingToolbar).toHaveClass("flex");
+  });
+
+  it("lets images fill a full-width section despite their stored width", () => {
+    const document = structuredClone(sampleTemplate);
+    const section = document.blocks.find(
+      (block) => block.id === "section-letter",
+    );
+    const image = createBlock("image");
+    image.props.width = 600;
+    section!.props.fullWidth = true;
+    section!.children = [image];
+    useBuilderStore.setState({ document });
+
+    const { container } = render(
+      <DndContext>
+        <EmailCanvas />
+      </DndContext>,
+    );
+
+    expect(screen.getByAltText("A bright modern workspace")).toHaveStyle({
+      maxWidth: "100%",
+      width: "100%",
+    });
+    expect(
+      container.querySelector(
+        '[data-canvas-block-id="section-letter"] > .min-h-18',
+      ),
+    ).toHaveStyle({ paddingInline: "0" });
   });
 });

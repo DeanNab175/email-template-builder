@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { sampleTemplate } from "@/constants/sample-template";
+import { createBlock } from "@/features/rendering/block-factory";
 import { renderEmailHtml } from "@/lib/email/html-renderer";
 
 describe("HTML email renderer", () => {
@@ -23,5 +24,35 @@ describe("HTML email renderer", () => {
 
     expect(html).not.toContain("<script>");
     expect(html).toContain("&lt;script&gt;");
+  });
+
+  it("renders images without spacing that prevents full-width sizing", () => {
+    const document = structuredClone(sampleTemplate);
+    const image = createBlock("image");
+    image.props.width = 800;
+    document.blocks = [image];
+
+    const html = renderEmailHtml(document);
+
+    expect(html).toContain("max-width:800px");
+    expect(html).toContain("width:100%");
+    expect(html).toContain('style="padding:0;text-align:center"');
+  });
+
+  it("removes section gutters and image width caps in full-width mode", () => {
+    const document = structuredClone(sampleTemplate);
+    const section = createBlock("section");
+    const image = createBlock("image");
+    section.props.fullWidth = true;
+    image.props.width = 600;
+    section.children = [image];
+    document.blocks = [section];
+
+    const html = renderEmailHtml(document);
+
+    expect(html).toContain("padding:24px 0px 24px");
+    expect(html).toContain(`width="${document.settings.width}"`);
+    expect(html).toContain("max-width:100%");
+    expect(html).not.toContain("max-width:600px");
   });
 });
