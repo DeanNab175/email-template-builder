@@ -1,6 +1,13 @@
 "use client";
 
-import { memo, type ReactNode } from "react";
+import {
+  createContext,
+  memo,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+  useContext,
+  useState,
+} from "react";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -14,6 +21,8 @@ import { blockRegistry } from "@/features/rendering/block-registry";
 import { cn } from "@/lib/utils/cn";
 import { useBuilderStore } from "@/store/builder-store";
 import type { EmailBlock } from "@/types";
+
+const HoveredBlockContext = createContext<string | null>(null);
 
 function DropList({
   blocks,
@@ -94,6 +103,7 @@ const CanvasBlock = memo(function CanvasBlock({
   const selectBlock = useBuilderStore((state) => state.selectBlock);
   const deleteBlock = useBuilderStore((state) => state.deleteBlock);
   const duplicateBlock = useBuilderStore((state) => state.duplicateBlock);
+  const hoveredBlockId = useContext(HoveredBlockContext);
   const {
     attributes,
     listeners,
@@ -118,9 +128,10 @@ const CanvasBlock = memo(function CanvasBlock({
   return (
     <div
       ref={setNodeRef}
+      data-canvas-block-id={block.id}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        "group/block relative cursor-pointer outline-none",
+        "relative cursor-pointer outline-none",
         selected && "z-10 ring-2 ring-indigo-500 ring-inset",
         !selected && "hover:ring-1 hover:ring-indigo-300 hover:ring-inset",
         isDragging && "z-50 opacity-35",
@@ -140,9 +151,11 @@ const CanvasBlock = memo(function CanvasBlock({
       aria-label={`${blockRegistry[block.type].label} block`}
     >
       <div
+        role="toolbar"
+        aria-label={`${blockRegistry[block.type].label} block controls`}
         className={cn(
-          "absolute top-1 left-1/2 z-30 hidden -translate-x-1/2 items-center overflow-hidden rounded-md bg-slate-900 text-white shadow-xl group-hover/block:flex",
-          selected && "flex",
+          "absolute top-1 left-1/2 z-30 hidden -translate-x-1/2 items-center overflow-hidden rounded-md bg-slate-900 text-white shadow-xl",
+          hoveredBlockId === block.id && "flex",
         )}
       >
         <button
@@ -185,22 +198,37 @@ export function EmailCanvas() {
   const document = useBuilderStore((state) => state.document);
   const selectedBlockId = useBuilderStore((state) => state.selectedBlockId);
   const selectBlock = useBuilderStore((state) => state.selectBlock);
+  const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
+
+  const handlePointerOver = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const target = event.target;
+    const block =
+      target instanceof Element
+        ? target.closest<HTMLElement>("[data-canvas-block-id]")
+        : null;
+
+    setHoveredBlockId(block?.dataset.canvasBlockId ?? null);
+  };
 
   return (
-    <div
-      className="min-h-full px-6 py-8 sm:px-10"
-      onClick={() => selectedBlockId && selectBlock(null)}
-    >
+    <HoveredBlockContext value={hoveredBlockId}>
       <div
-        className="mx-auto overflow-hidden bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.28)] transition-[width] duration-300"
-        style={{
-          maxWidth: document.settings.width,
-          fontFamily: document.settings.fontFamily,
-        }}
-        aria-label="Email design canvas"
+        className="min-h-full px-6 py-8 sm:px-10"
+        onClick={() => selectedBlockId && selectBlock(null)}
+        onPointerOver={handlePointerOver}
+        onPointerLeave={() => setHoveredBlockId(null)}
       >
-        <DropList blocks={document.blocks} parentId={null} />
+        <div
+          className="mx-auto overflow-hidden bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.28)] transition-[width] duration-300"
+          style={{
+            maxWidth: document.settings.width,
+            fontFamily: document.settings.fontFamily,
+          }}
+          aria-label="Email design canvas"
+        >
+          <DropList blocks={document.blocks} parentId={null} />
+        </div>
       </div>
-    </div>
+    </HoveredBlockContext>
   );
 }
