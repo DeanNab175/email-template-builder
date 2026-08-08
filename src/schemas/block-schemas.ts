@@ -13,6 +13,7 @@ const alignment = z.enum(["left", "center", "right"]);
 export const blockSchemas = {
   section: z.object({
     backgroundColor: color,
+    backgroundImage: safeUrl.optional(),
     fullWidth: z.boolean().optional(),
     paddingTop: z.coerce.number().min(0).max(120),
     paddingBottom: z.coerce.number().min(0).max(120),
@@ -73,6 +74,13 @@ export const blockSchemas = {
     gap: z.coerce.number().min(0).max(48),
     stackOnMobile: z.boolean(),
     backgroundColor: color,
+  }),
+  custom: z.object({
+    name: z.string().trim().min(1, "Name is required").max(80),
+    backgroundColor: color,
+    paddingTop: z.coerce.number().min(0).max(120),
+    paddingBottom: z.coerce.number().min(0).max(120),
+    paddingHorizontal: z.coerce.number().min(0).max(80),
   }),
   hero: z.object({
     eyebrow: z.string().max(80),

@@ -77,4 +77,20 @@ describe("schema-driven property editor", () => {
 
     expect(section?.props.fullWidth).toBe(true);
   });
+
+  it("sets an optional background image on a section", () => {
+    useBuilderStore.getState().selectBlock("section-letter");
+    render(<PropertyEditor />);
+
+    fireEvent.change(screen.getByLabelText("Background image URL"), {
+      target: { value: "https://example.com/section-background.jpg" },
+    });
+
+    const section = useBuilderStore
+      .getState()
+      .document.blocks.find((block) => block.id === "section-letter");
+    expect(section?.props.backgroundImage).toBe(
+      "https://example.com/section-background.jpg",
+    );
+  });
 });

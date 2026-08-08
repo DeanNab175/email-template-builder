@@ -24,13 +24,19 @@ export function EmailBlockView({
   const insideFullWidthSection = useContext(FullWidthSectionContext);
 
   switch (block.type) {
-    case "section":
+    case "section": {
+      const backgroundImage = text(props.backgroundImage);
       return (
         <FullWidthSectionContext value={props.fullWidth === true}>
           <div
             className="min-h-18"
             style={{
               backgroundColor: text(props.backgroundColor),
+              backgroundImage: backgroundImage
+                ? `url(${JSON.stringify(backgroundImage)})`
+                : undefined,
+              backgroundPosition: "center",
+              backgroundSize: "cover",
               paddingTop: number(props.paddingTop),
               paddingBottom: number(props.paddingBottom),
               paddingInline: props.fullWidth === true ? 0 : 24,
@@ -40,6 +46,7 @@ export function EmailBlockView({
           </div>
         </FullWidthSectionContext>
       );
+    }
     case "container":
       return (
         <div
@@ -152,6 +159,20 @@ export function EmailBlockView({
             gap: number(props.gap),
             gridTemplateColumns: `repeat(${number(props.columnCount)}, minmax(0, 1fr))`,
             padding: 8,
+          }}
+        >
+          {children}
+        </div>
+      );
+    case "custom":
+      return (
+        <div
+          className="min-h-20"
+          style={{
+            backgroundColor: text(props.backgroundColor),
+            paddingTop: number(props.paddingTop),
+            paddingBottom: number(props.paddingBottom),
+            paddingInline: number(props.paddingHorizontal),
           }}
         >
           {children}

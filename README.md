@@ -32,7 +32,9 @@ npx next build --webpack
 
 ## Core capabilities
 
-- 12 registered blocks: section, container, text, heading, button, image, divider, spacer, columns, hero, social links, and footer
+- 12 standard blocks: section, container, text, heading, button, image, divider, spacer, columns, hero, social links, and footer
+- Dedicated Custom Block Studio for composing, styling, and saving reusable nested blocks
+- Persistent “Your blocks” library with click and drag insertion into any email
 - Recursive component tree with nesting, reorder, keyboard drag controls, duplicate, and delete
 - React Hook Form `FormProvider` and `useFormContext` property system driven entirely by registry field definitions
 - Per-block Zod validation with enforced image alternative text and safe URL protocols

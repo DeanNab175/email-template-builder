@@ -23,6 +23,8 @@ import type {
   BlockProps,
   BlockType,
   BuilderSurface,
+  CustomBlock,
+  EmailBlock,
   EmailClient,
   EmailDocument,
   EmailSettings,
@@ -30,6 +32,7 @@ import type {
 } from "@/types";
 
 const HISTORY_LIMIT = 60;
+const CUSTOM_BLOCK_LIMIT = 50;
 const serverStorage: StateStorage = {
   getItem: () => null,
   setItem: () => undefined,
@@ -38,6 +41,7 @@ const serverStorage: StateStorage = {
 
 interface BuilderState {
   document: EmailDocument;
+  customBlocks: CustomBlock[];
   selectedBlockId: string | null;
   past: EmailDocument[];
   future: EmailDocument[];
@@ -55,6 +59,18 @@ interface BuilderState {
     parentId?: string | null,
     index?: number,
   ) => string;
+  addCustomBlock: (
+    customBlockId: string,
+    parentId?: string | null,
+    index?: number,
+  ) => string | null;
+  saveCustomBlock: (
+    name: string,
+    description: string,
+    block: EmailBlock,
+    customBlockId?: string | null,
+  ) => string | null;
+  deleteCustomBlock: (customBlockId: string) => void;
   moveBlock: (id: string, parentId: string | null, index?: number) => void;
   deleteBlock: (id: string) => void;
   duplicateBlock: (id: string) => void;
@@ -135,8 +151,9 @@ function makeBlankDocument(): EmailDocument {
 
 export const useBuilderStore = create<BuilderState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       document: cloneDocument(sampleTemplate),
+      customBlocks: [],
       selectedBlockId: null,
       past: [],
       future: [],
@@ -164,6 +181,62 @@ export const useBuilderStore = create<BuilderState>()(
         set({ selectedBlockId: block.id });
         return block.id;
       },
+
+      addCustomBlock: (customBlockId, parentId = null, index) => {
+        const saved = get().customBlocks.find(
+          (customBlock) => customBlock.id === customBlockId,
+        );
+        if (!saved) return null;
+
+        const block = cloneBlock(saved.block, (type) => createId(type));
+        set((state) =>
+          historyMutation(state, (document) =>
+            nextDocument(
+              document,
+              insertBlock(document.blocks, parentId, block, index),
+            ),
+          ),
+        );
+        set({ selectedBlockId: block.id });
+        return block.id;
+      },
+
+      saveCustomBlock: (name, description, block, customBlockId = null) => {
+        const trimmedName = name.trim();
+        if (!trimmedName || block.type !== "custom") return null;
+
+        const existing = customBlockId
+          ? get().customBlocks.find(
+              (customBlock) => customBlock.id === customBlockId,
+            )
+          : undefined;
+
+        const customBlock: CustomBlock = {
+          id: existing?.id ?? createId("custom"),
+          name: trimmedName.slice(0, 80),
+          description: description.trim().slice(0, 160),
+          block: {
+            ...structuredClone(block),
+            props: { ...block.props, name: trimmedName.slice(0, 80) },
+          },
+          createdAt: existing?.createdAt ?? new Date().toISOString(),
+        };
+        set((state) => ({
+          customBlocks: existing
+            ? state.customBlocks.map((savedBlock) =>
+                savedBlock.id === existing.id ? customBlock : savedBlock,
+              )
+            : [customBlock, ...state.customBlocks].slice(0, CUSTOM_BLOCK_LIMIT),
+        }));
+        return customBlock.id;
+      },
+
+      deleteCustomBlock: (customBlockId) =>
+        set((state) => ({
+          customBlocks: state.customBlocks.filter(
+            (customBlock) => customBlock.id !== customBlockId,
+          ),
+        })),
 
       moveBlock: (id, targetParentId, index) =>
         set((state) =>
@@ -357,11 +430,17 @@ export const useBuilderStore = create<BuilderState>()(
     }),
     {
       name: "northstar-email-builder",
+      version: 2,
+      migrate: (persistedState, version) => {
+        const state = persistedState as Partial<BuilderState>;
+        return version < 2 ? { ...state, customBlocks: [] } : state;
+      },
       storage: createJSONStorage(() =>
         typeof window === "undefined" ? serverStorage : window.localStorage,
       ),
       partialize: (state) => ({
         document: state.document,
+        customBlocks: state.customBlocks,
         previewMode: state.previewMode,
         emailClient: state.emailClient,
       }),

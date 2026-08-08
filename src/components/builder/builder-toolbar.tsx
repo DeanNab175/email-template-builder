@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
+  Blocks,
   Check,
   ChevronDown,
   Code2,
@@ -186,6 +188,14 @@ export function BuilderToolbar() {
                 : "Ready"}
           </div>
           <ThemeToggle />
+          <Link
+            href="/blocks"
+            className="inline-flex h-8 shrink-0 items-center justify-center gap-2 rounded-lg px-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none sm:px-3 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            aria-label="Open block studio"
+          >
+            <Blocks className="size-3.5" />
+            <span className="hidden xl:inline">Block studio</span>
+          </Link>
           <Button
             variant="ghost"
             size="sm"

@@ -8,6 +8,7 @@ export const BLOCK_TYPES = [
   "divider",
   "spacer",
   "columns",
+  "custom",
   "hero",
   "social",
   "footer",
@@ -23,6 +24,14 @@ export interface EmailBlock {
   type: BlockType;
   props: BlockProps;
   children?: EmailBlock[];
+}
+
+export interface CustomBlock {
+  id: string;
+  name: string;
+  description: string;
+  block: EmailBlock;
+  createdAt: string;
 }
 
 export type TemplateStatus = "draft" | "published";

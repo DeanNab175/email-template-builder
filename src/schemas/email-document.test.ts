@@ -28,6 +28,14 @@ describe("email document validation", () => {
     expect(() => parseEmailDocument(document)).toThrow(/http/);
   });
 
+  it("rejects unsafe section background image protocols", () => {
+    const document = structuredClone(sampleTemplate);
+    const section = document.blocks.find((block) => block.type === "section")!;
+    section.props.backgroundImage = "javascript:alert(1)";
+
+    expect(() => parseEmailDocument(document)).toThrow(/http/);
+  });
+
   it("rejects unsafe custom font stacks", () => {
     const document = structuredClone(sampleTemplate);
     document.settings.fontFamily = "Arial; color: red";

@@ -56,6 +56,23 @@ describe("HTML email renderer", () => {
     expect(html).not.toContain("max-width:600px");
   });
 
+  it("exports section background images with email-safe fallbacks", () => {
+    const document = structuredClone(sampleTemplate);
+    const section = createBlock("section");
+    section.props.backgroundImage =
+      "https://example.com/section-background.jpg";
+    document.blocks = [section];
+
+    const html = renderEmailHtml(document);
+
+    expect(html).toContain(
+      'background="https://example.com/section-background.jpg"',
+    );
+    expect(html).toContain(
+      "background-image:url('https://example.com/section-background.jpg')",
+    );
+  });
+
   it("uses the selected document font for text and buttons", () => {
     const document = structuredClone(sampleTemplate);
     document.settings.fontFamily = "'Inter', Arial, sans-serif";
@@ -78,5 +95,22 @@ describe("HTML email renderer", () => {
     expect(html).toContain(
       "@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap')",
     );
+  });
+
+  it("renders authored custom block wrappers and their nested content", () => {
+    const document = structuredClone(sampleTemplate);
+    const custom = createBlock("custom");
+    const heading = createBlock("heading");
+    custom.props.backgroundColor = "#f8fafc";
+    custom.props.paddingHorizontal = 32;
+    heading.props.content = "A reusable custom heading";
+    custom.children = [heading];
+    document.blocks = [custom];
+
+    const html = renderEmailHtml(document);
+
+    expect(html).toContain("A reusable custom heading");
+    expect(html).toContain("padding:24px 32px 24px");
+    expect(html).toContain('bgcolor="#f8fafc"');
   });
 });

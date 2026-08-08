@@ -17,12 +17,16 @@ export const blockRegistry: Record<BlockType, BlockDefinition> = {
     acceptsChildren: true,
     defaultProps: {
       backgroundColor: "#ffffff",
+      backgroundImage: "",
       fullWidth: false,
       paddingTop: 24,
       paddingBottom: 24,
     },
     fields: [
       field("backgroundColor", "Background", "color", "Appearance"),
+      field("backgroundImage", "Background image URL", "url", "Appearance", {
+        help: "Optional image shown behind the section content.",
+      }),
       field("fullWidth", "Full width", "checkbox", "Layout", {
         help: "Remove the side gutters and let images span the section.",
       }),
@@ -272,6 +276,35 @@ export const blockRegistry: Record<BlockType, BlockDefinition> = {
       field("backgroundColor", "Background", "color", "Appearance"),
     ],
   },
+  custom: {
+    type: "custom",
+    label: "Custom block",
+    description: "Reusable block built in the block studio",
+    category: "Structure",
+    acceptsChildren: true,
+    defaultProps: {
+      name: "Custom block",
+      backgroundColor: "#ffffff",
+      paddingTop: 24,
+      paddingBottom: 24,
+      paddingHorizontal: 24,
+    },
+    fields: [
+      field("backgroundColor", "Background", "color", "Appearance"),
+      field("paddingTop", "Top spacing", "range", "Layout", {
+        min: 0,
+        max: 120,
+      }),
+      field("paddingBottom", "Bottom spacing", "range", "Layout", {
+        min: 0,
+        max: 120,
+      }),
+      field("paddingHorizontal", "Side spacing", "range", "Layout", {
+        min: 0,
+        max: 80,
+      }),
+    ],
+  },
   hero: {
     type: "hero",
     label: "Hero",
@@ -379,4 +412,6 @@ export const blockRegistry: Record<BlockType, BlockDefinition> = {
   },
 };
 
-export const blockDefinitions = Object.values(blockRegistry);
+export const blockDefinitions = Object.values(blockRegistry).filter(
+  (definition) => definition.type !== "custom",
+);

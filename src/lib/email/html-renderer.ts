@@ -64,8 +64,15 @@ export function renderBlockHtml(
   switch (block.type) {
     case "section": {
       const fullWidth = props.fullWidth === true;
+      const backgroundImage = asString(props.backgroundImage);
+      const backgroundAttribute = backgroundImage
+        ? ` background="${safeHref(backgroundImage)}"`
+        : "";
+      const backgroundStyles = backgroundImage
+        ? `;background-image:url('${safeHref(backgroundImage)}');background-position:center;background-size:cover`
+        : "";
       return `<tr>
-  <td bgcolor="${asString(props.backgroundColor)}" style="background-color:${asString(props.backgroundColor)};padding:${asNumber(props.paddingTop)}px ${fullWidth ? 0 : 24}px ${asNumber(props.paddingBottom)}px">
+  <td bgcolor="${asString(props.backgroundColor)}"${backgroundAttribute} style="background-color:${asString(props.backgroundColor)}${backgroundStyles};padding:${asNumber(props.paddingTop)}px ${fullWidth ? 0 : 24}px ${asNumber(props.paddingBottom)}px">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tbody>${renderChildren(block.children, document, fullWidth)}</tbody></table>
   </td>
 </tr>`;
@@ -121,6 +128,13 @@ export function renderBlockHtml(
         )
         .join("")}</tr></tbody></table></td></tr>`;
     }
+
+    case "custom":
+      return `<tr>
+  <td bgcolor="${asString(props.backgroundColor)}" style="background-color:${asString(props.backgroundColor)};padding:${asNumber(props.paddingTop)}px ${asNumber(props.paddingHorizontal)}px ${asNumber(props.paddingBottom)}px">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tbody>${renderChildren(block.children, document, insideFullWidthSection)}</tbody></table>
+  </td>
+</tr>`;
 
     case "hero": {
       const alignment = asString(props.align);

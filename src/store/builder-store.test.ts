@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { sampleTemplate } from "@/constants/sample-template";
+import { createBlock } from "@/features/rendering/block-factory";
 import { useBuilderStore } from "@/store/builder-store";
 
 describe("builder store", () => {
   beforeEach(() => {
     useBuilderStore.setState({
       document: structuredClone(sampleTemplate),
+      customBlocks: [],
       selectedBlockId: null,
       past: [],
       future: [],
@@ -71,5 +73,49 @@ describe("builder store", () => {
 
     expect(after[0]).toBe(before[1]);
     expect(after[1]).toBe(before[0]);
+  });
+
+  it("saves and inserts authored custom blocks with fresh nested IDs", () => {
+    const customRoot = createBlock("custom");
+    customRoot.children = [
+      structuredClone(
+        useBuilderStore
+          .getState()
+          .document.blocks.find((block) => block.id === "section-letter")!
+          .children![0],
+      ),
+    ];
+    const savedId = useBuilderStore
+      .getState()
+      .saveCustomBlock("Feature section", "Reusable introduction", customRoot);
+
+    expect(savedId).not.toBeNull();
+    expect(useBuilderStore.getState().customBlocks[0].name).toBe(
+      "Feature section",
+    );
+
+    const insertedId = useBuilderStore
+      .getState()
+      .addCustomBlock(savedId as string);
+    const inserted = useBuilderStore
+      .getState()
+      .document.blocks.find((block) => block.id === insertedId);
+
+    expect(inserted?.type).toBe("custom");
+    expect(inserted?.id).not.toBe(customRoot.id);
+    expect(inserted?.children?.[0].id).not.toBe("heading-letter");
+  });
+
+  it("removes a custom block without changing the email", () => {
+    const blockCount = useBuilderStore.getState().document.blocks.length;
+    const customRoot = createBlock("custom");
+    const savedId = useBuilderStore
+      .getState()
+      .saveCustomBlock("Campaign hero", "", customRoot);
+
+    useBuilderStore.getState().deleteCustomBlock(savedId as string);
+
+    expect(useBuilderStore.getState().customBlocks).toHaveLength(0);
+    expect(useBuilderStore.getState().document.blocks).toHaveLength(blockCount);
   });
 });

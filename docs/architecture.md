@@ -37,6 +37,7 @@ src/
 ├── components/
 │   ├── builder/                 # Shell, toolbar, providers
 │   ├── canvas/                  # Recursive visual renderer
+│   ├── custom-blocks/           # Standalone reusable-block studio
 │   ├── editor/                  # Generated RHF property forms
 │   ├── preview/                 # Sandboxed client preview
 │   ├── sidebar/                 # Draggable registry palette
@@ -82,16 +83,19 @@ The factory creates valid block instances from registry defaults. The property e
 
 ## State management
 
-| State                                   | Responsibility                        |
-| --------------------------------------- | ------------------------------------- |
-| `document`                              | Current canonical JSON document       |
-| `selectedBlockId`                       | Canvas/property-panel coordination    |
-| `past`, `future`                        | Bounded 60-snapshot undo/redo history |
-| `isDirty`, `lastSavedAt`                | Draft and autosave feedback           |
-| `previewMode`, `emailClient`, `surface` | Editor presentation preferences       |
-| `historyKey`, `historyAt`               | Coalescing high-frequency form edits  |
+| State                                   | Responsibility                         |
+| --------------------------------------- | -------------------------------------- |
+| `document`                              | Current canonical JSON document        |
+| `customBlocks`                          | Browser-local reusable block snapshots |
+| `selectedBlockId`                       | Canvas/property-panel coordination     |
+| `past`, `future`                        | Bounded 60-snapshot undo/redo history  |
+| `isDirty`, `lastSavedAt`                | Draft and autosave feedback            |
+| `previewMode`, `emailClient`, `surface` | Editor presentation preferences        |
+| `historyKey`, `historyAt`               | Coalescing high-frequency form edits   |
 
-Document commands are colocated in the store; recursive mutation details remain in pure tree utilities. Only the document and preview preferences persist through the Zustand adapter. Saved template collections live behind `templateRepository` and are queried through TanStack Query, keeping editor state and server-state concerns separate.
+Document commands are colocated in the store; recursive mutation details remain in pure tree utilities. The document, reusable blocks, and preview preferences persist through the Zustand adapter. Saved template collections live behind `templateRepository` and are queried through TanStack Query, keeping editor state and server-state concerns separate.
+
+Custom blocks are authored independently at `/blocks`. The studio has its own palette, recursive canvas, property inspector, and validation flow, so opening it never replaces or mutates the current email document. A saved custom block owns a `custom` wrapper plus its nested content tree. Inserting one from “Your blocks” deep-clones that tree with fresh IDs, so every email copy can be edited independently. The reusable library is persisted with the builder preferences and remains available when switching templates or starting a new document.
 
 ## Rendering and email compatibility
 
@@ -165,7 +169,7 @@ Playwright contains desktop/mobile smoke coverage for loading the canvas, adding
 1. Replace browser persistence with a tenant-aware database repository and authenticated API.
 2. Add collaborative presence, optimistic concurrency, revision comparison, and approval workflows.
 3. Add an MJML renderer adapter plus HTML equivalence fixtures.
-4. Add merge-tag definitions, conditional content, localization, and reusable saved sections.
+4. Add merge-tag definitions, conditional content, and localization.
 5. Add asset upload/CDN adapters, image transformation, and link tracking.
 6. Add provider adapters for SendGrid, Mailchimp, Salesforce Marketing Cloud, HubSpot, and Dynamics 365 Marketing.
 7. Add server-side CSS inlining/minification and delivery-time personalization.

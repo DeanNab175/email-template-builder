@@ -37,8 +37,10 @@ const EmailPreview = dynamic(
 );
 
 interface DragData {
-  kind?: "palette" | "block" | "container";
+  kind?: "palette" | "custom" | "block" | "container";
   type?: BlockType;
+  customBlockId?: string;
+  label?: string;
   blockId?: string;
   acceptsChildren?: boolean;
   parentId?: string | null;
@@ -51,6 +53,7 @@ export function EmailBuilder() {
   const surface = useBuilderStore((state) => state.surface);
   const selectedBlockId = useBuilderStore((state) => state.selectedBlockId);
   const addBlock = useBuilderStore((state) => state.addBlock);
+  const addCustomBlock = useBuilderStore((state) => state.addCustomBlock);
   const moveBlock = useBuilderStore((state) => state.moveBlock);
   const deleteBlock = useBuilderStore((state) => state.deleteBlock);
   const undo = useBuilderStore((state) => state.undo);
@@ -87,11 +90,13 @@ export function EmailBuilder() {
   const handleDragStart = ({ active }: DragStartEvent) => {
     const data = active.data.current as DragData | undefined;
     setActiveLabel(
-      data?.type
-        ? blockRegistry[data.type].label
-        : data?.kind === "block"
-          ? "Move block"
-          : "Block",
+      data?.kind === "custom"
+        ? (data.label ?? "Custom block")
+        : data?.type
+          ? blockRegistry[data.type].label
+          : data?.kind === "block"
+            ? "Move block"
+            : "Block",
     );
   };
 
@@ -111,6 +116,8 @@ export function EmailBuilder() {
 
     if (source.kind === "palette" && source.type) {
       addBlock(source.type, targetParentId, targetIndex);
+    } else if (source.kind === "custom" && source.customBlockId) {
+      addCustomBlock(source.customBlockId, targetParentId, targetIndex);
     } else if (
       source.kind === "block" &&
       source.blockId &&
