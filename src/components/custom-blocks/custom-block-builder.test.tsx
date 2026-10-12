@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { CustomBlockBuilder } from "@/components/custom-blocks/custom-block-builder";
 import { sampleTemplate } from "@/constants/sample-template";
+import { createBlock } from "@/features/rendering/block-factory";
 import { useBuilderStore } from "@/store/builder-store";
 
 const push = vi.fn();
@@ -22,6 +23,7 @@ describe("custom block studio", () => {
       isDirty: false,
       historyKey: null,
       historyAt: 0,
+      hasHydrated: true,
     });
   });
 
@@ -92,5 +94,42 @@ describe("custom block studio", () => {
     expect(
       screen.getByRole("button", { name: "Add Heading to custom block" }),
     ).toBeInTheDocument();
+  });
+
+  it("loads and updates an existing custom block in place", () => {
+    const custom = createBlock("custom");
+    const heading = createBlock("heading");
+    heading.props.content = "Original heading";
+    custom.children = [heading];
+    useBuilderStore.setState({
+      customBlocks: [
+        {
+          id: "custom-existing",
+          name: "Existing block",
+          description: "Original description",
+          block: custom,
+          createdAt: "2026-08-08T08:00:00.000Z",
+        },
+      ],
+    });
+
+    render(<CustomBlockBuilder initialBlockId="custom-existing" />);
+
+    expect(screen.getByLabelText("Block name")).toHaveValue("Existing block");
+    fireEvent.click(screen.getByRole("button", { name: "Edit Heading" }));
+    expect(screen.getByLabelText("Heading")).toHaveValue("Original heading");
+    fireEvent.change(screen.getByLabelText("Heading"), {
+      target: { value: "Updated heading" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^Save$/ }));
+
+    expect(useBuilderStore.getState().customBlocks).toHaveLength(1);
+    expect(useBuilderStore.getState().customBlocks[0]).toMatchObject({
+      id: "custom-existing",
+      createdAt: "2026-08-08T08:00:00.000Z",
+      block: {
+        children: [{ props: { content: "Updated heading" } }],
+      },
+    });
   });
 });

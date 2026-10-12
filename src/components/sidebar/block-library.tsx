@@ -15,6 +15,7 @@ import {
   MousePointerClick,
   MoveVertical,
   PanelBottom,
+  Pencil,
   Plus,
   Search,
   Share2,
@@ -118,6 +119,13 @@ function CustomLibraryItem({ customBlock }: { customBlock: CustomBlock }) {
           {customBlock.description || "Custom reusable block"}
         </span>
       </button>
+      <Link
+        href={`/blocks/${customBlock.id}`}
+        className="absolute top-2 right-9 hidden size-6 items-center justify-center rounded-md bg-white text-slate-400 shadow-sm group-hover:flex hover:bg-indigo-50 hover:text-indigo-600 focus:flex dark:bg-slate-900 dark:hover:bg-indigo-950"
+        aria-label={`Edit custom block ${customBlock.name}`}
+      >
+        <Pencil className="size-3" />
+      </Link>
       <button
         type="button"
         className="absolute top-2 right-2 hidden size-6 items-center justify-center rounded-md bg-white text-slate-400 shadow-sm group-hover:flex hover:bg-rose-50 hover:text-rose-600 focus:flex dark:bg-slate-900 dark:hover:bg-rose-950"

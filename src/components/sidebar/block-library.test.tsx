@@ -50,4 +50,18 @@ describe("custom block library", () => {
       ],
     });
   });
+
+  it("links a saved custom block to its edit page", () => {
+    render(
+      <DndContext>
+        <BlockLibrary />
+      </DndContext>,
+    );
+
+    expect(
+      screen.getByRole("link", {
+        name: "Edit custom block Campaign hero",
+      }),
+    ).toHaveAttribute("href", "/blocks/custom-campaign-hero");
+  });
 });

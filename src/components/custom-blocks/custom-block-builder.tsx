@@ -61,7 +61,7 @@ import {
 } from "@/lib/utils/tree";
 import { blockSchemas } from "@/schemas";
 import { useBuilderStore } from "@/store/builder-store";
-import type { BlockProps, BlockType, EmailBlock } from "@/types";
+import type { BlockProps, BlockType, CustomBlock, EmailBlock } from "@/types";
 
 interface DraftDragData {
   kind?: "draft-palette" | "draft-block" | "draft-container";
@@ -196,15 +196,61 @@ function CustomBlockPalette({ onAdd }: { onAdd: (type: BlockType) => void }) {
   );
 }
 
-export function CustomBlockBuilder() {
+export function CustomBlockBuilder({
+  initialBlockId,
+}: {
+  initialBlockId?: string;
+}) {
+  const customBlocks = useBuilderStore((state) => state.customBlocks);
+  const hasHydrated = useBuilderStore((state) => state.hasHydrated);
+  const initialBlock = initialBlockId
+    ? customBlocks.find((candidate) => candidate.id === initialBlockId)
+    : undefined;
+
+  if (initialBlockId && !hasHydrated) {
+    return (
+      <div className="flex h-dvh items-center justify-center bg-slate-100 text-sm font-medium text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+        Loading custom block…
+      </div>
+    );
+  }
+
+  return (
+    <CustomBlockEditor
+      key={initialBlockId ?? "new-custom-block"}
+      initialBlock={initialBlock}
+      editNotFound={Boolean(initialBlockId && !initialBlock)}
+    />
+  );
+}
+
+function CustomBlockEditor({
+  initialBlock,
+  editNotFound,
+}: {
+  initialBlock?: CustomBlock;
+  editNotFound: boolean;
+}) {
   const router = useRouter();
   const saveCustomBlock = useBuilderStore((state) => state.saveCustomBlock);
-  const [root, setRoot] = useState(createDraftRoot);
+  const [root, setRoot] = useState(() =>
+    initialBlock ? structuredClone(initialBlock.block) : createDraftRoot(),
+  );
   const [selectedId, setSelectedId] = useState(root.id);
-  const [name, setName] = useState("Untitled custom block");
-  const [description, setDescription] = useState("");
-  const [savedId, setSavedId] = useState<string | null>(null);
-  const [status, setStatus] = useState("");
+  const [name, setName] = useState(
+    initialBlock?.name ?? "Untitled custom block",
+  );
+  const [description, setDescription] = useState(
+    initialBlock?.description ?? "",
+  );
+  const [savedId, setSavedId] = useState<string | null>(
+    initialBlock?.id ?? null,
+  );
+  const [status, setStatus] = useState(
+    editNotFound
+      ? "The custom block you wanted to edit could not be found."
+      : "",
+  );
   const [activeLabel, setActiveLabel] = useState("");
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
